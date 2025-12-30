@@ -18,4 +18,18 @@ export class UsersService {
       },
     });
   }
+  setAvatar(userId: number, avatarUrl: string) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { avatarUrl },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        avatarUrl: true,
+        createdAt: true,
+      },
+    });
+  }
 }
