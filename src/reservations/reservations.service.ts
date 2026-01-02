@@ -2,6 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { randomUUID } from 'crypto';
+import { UpdateReservationDto } from './dto/update-reservation.dto';
+
 
 @Injectable()
 export class ReservationsService {
@@ -96,6 +98,58 @@ export class ReservationsService {
       include: {
         room: true,
         user: { select: { id: true, name: true, email: true } },
+      },
+    });
+  }
+
+  findOne(id: number) {
+    return this.prisma.reservation.findUnique({
+      where: { id },
+      include: {
+        room: true,
+        user: { select: { id: true, name: true, email: true } },
+      },
+    });
+  }
+
+  async update(id: number, userId: number, dto: UpdateReservationDto) {
+    const existing = await this.prisma.reservation.findFirst({
+      where: { id, userId },
+    });
+
+    if (!existing)
+      throw new BadRequestException('Reservation not found or not yours');
+
+    const roomId = dto.roomId ?? existing.roomId;
+    const startAt = dto.startAt ? this.toDate(dto.startAt) : existing.startAt;
+    const endAt = dto.endAt ? this.toDate(dto.endAt) : existing.endAt;
+
+    if (endAt <= startAt)
+      throw new BadRequestException('endAt must be after startAt');
+
+    // conflict check (izključi trenutno rezervacijo)
+    const conflict = await this.prisma.reservation.findFirst({
+      where: {
+        id: { not: id },
+        roomId,
+        startAt: { lt: endAt },
+        endAt: { gt: startAt },
+      },
+      select: { id: true },
+    });
+
+    if (conflict)
+      throw new BadRequestException(
+        'Room is already reserved in that time slot',
+      );
+
+    return this.prisma.reservation.update({
+      where: { id },
+      data: {
+        roomId,
+        title: dto.title ?? existing.title,
+        startAt,
+        endAt,
       },
     });
   }
