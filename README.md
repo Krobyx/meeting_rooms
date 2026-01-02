@@ -96,3 +96,28 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+# Meeting Rooms – sistem za rezervacijo sejnih sob
+
+Spletna aplikacija za podjetje, ki omogoča:
+- registracijo/prijavo uporabnikov (JWT),
+- CRUD za sejne sobe,
+- rezervacije sejnih sob z preprečevanjem dvojnih rezervacij,
+- ponavljajoče rezervacije (vsak teden za X tednov) z preverjanjem razpoložljivosti,
+- nalaganje avatarja uporabnika (upload slike).
+
+## Tehnologije
+- Backend: NestJS
+- ORM: Prisma
+- Baza: PostgreSQL
+- Avtentikacija: JWT (Passport)
+- Upload datotek: Multer (disk storage)
+
+---
+
+## Namestitev in zagon (lokalno)
+
+### 1) Kloniranje
+```bash
+git clone <tvoj_repo_url>
+cd meeting_rooms
