@@ -2,6 +2,16 @@ import { useState } from 'react';
 import { api } from '../api';
 import { useNavigate } from 'react-router-dom';
 
+function parseJwt(token: string) {
+  try {
+    const base64 = token.split('.')[1];
+    const json = atob(base64);
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
 export default function LoginPage() {
   const nav = useNavigate();
   const [email, setEmail] = useState('anze@test.com');
@@ -12,8 +22,18 @@ export default function LoginPage() {
     setMsg('');
     try {
       const res = await api.post('/auth/login', { email, password });
-      localStorage.setItem('token', res.data.access_token);
-      nav('/rooms');
+
+      const token = res.data.access_token;
+      localStorage.setItem('token', token);
+
+      // ⬇️ preberi role iz JWT
+      const payload = parseJwt(token);
+
+      if (payload?.role === 'ADMIN') {
+        nav('/rooms');
+      } else {
+        nav('/reservations');
+      }
     } catch (e: any) {
       setMsg(e?.response?.data?.message ?? 'Login failed');
     }
